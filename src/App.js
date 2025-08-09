@@ -1,25 +1,26 @@
-import logo from './logo.svg';
 import './App.css';
+import { BarTrue } from './scripts';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+  
+  <div className="App">
+
+  <div className ="navBar">
+      <nav>
+        <ul>
+          <li><a href='#'>A</a></li>
+          <li onClick={BarTrue}><a href='#'>B</a></li>
+          <li><a href='#'>C</a></li>
+          <li><a href='#'>D</a></li>
+        </ul>
+      </nav>
     </div>
+  </div>
   );
+
+
+  
 }
 
 export default App;
