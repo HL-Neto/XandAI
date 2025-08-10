@@ -21,7 +21,32 @@ function App() {
     <div className = "hisChat">
       <nav>
         <ul>
-          <li><a href='#'>chat</a></li>
+         
+          <li><a href='#'>chats</a></li>
+
+          <br/>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          <li><a href='*'>conversation</a></li>
+          
         </ul>
       </nav>
 
