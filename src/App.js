@@ -1,5 +1,5 @@
 import './App.css';
-import { BarTrue, showBar } from './scripts';
+import { showBar } from './scripts';
 
 function App() {
   return (
@@ -22,8 +22,6 @@ function App() {
       <nav>
         <ul>
           <li><a href='#'>chat</a></li>
-          
-       
         </ul>
       </nav>
 
@@ -37,20 +35,8 @@ function App() {
   </form>
 
   
-  
-  
-  
-  
-  
   </div>
-
-
-
-  
   );
-
-
-  
 }
 
 export default App;
