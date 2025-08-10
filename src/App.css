@@ -56,16 +56,23 @@ body
 .hisChat ul
 {
   list-style: none;
+  padding-top: 5%;
 }
 .hisChat li
 {
-  padding-bottom: 20px;
+  padding-left: 9px;
+  padding-bottom: 7px;
 }
 .hisChat a
 {
   padding-left: 10px;
   color: aliceblue;
   text-decoration: none;
+}
+
+.hisChat :first-child
+{
+  padding-bottom: 20px;
 }
 
 
