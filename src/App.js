@@ -1,5 +1,5 @@
 import './App.css';
-import { BarTrue } from './scripts';
+import { BarTrue, showBar } from './scripts';
 
 function App() {
   return (
@@ -9,14 +9,38 @@ function App() {
   <div className ="navBar">
       <nav>
         <ul>
+          <li onClick={showBar}><a href='#'>A</a></li>
+          <li><a href='#'>B</a></li>
+          <li><a href='#'>C</a></li>
+          <li><a href='#'>D</a></li>
+          
+        </ul>
+      </nav>
+    </div>
+  
+    <div className = "hisChat">
+      <nav>
+        <ul>
           <li><a href='#'>A</a></li>
-          <li onClick={BarTrue}><a href='#'>B</a></li>
+          <li><a href='#'>B</a></li>
           <li><a href='#'>C</a></li>
           <li><a href='#'>D</a></li>
         </ul>
       </nav>
+
     </div>
+  
+  
+  
+  
+  
+  
+  
   </div>
+
+
+
+  
   );
 
 

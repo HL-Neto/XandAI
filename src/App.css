@@ -13,32 +13,59 @@ body
 
 .navBar
 {
-  background-color: black;
+  background-color: rgb(255, 0, 0);
   z-index: 999;
   width: 50px;
   height: 100vh;
+  
 }
 
 .navBar ul
 {
+ margin-left: 6px;
  list-style: none;
- 
 }
 .navBar li
 {
+  padding-left: 3px;
+  padding-top: 12px;
   padding-bottom: 20px;
+  margin-bottom: -20px;
 }
 .navBar a
-{
-  padding-left: 10px;
+{ 
   color: aliceblue;
   text-decoration: none;
 }
 .navBar :first-child
 {
-  padding-top: 10px;
-  padding-bottom: 50px;
+ padding-left: 3px;
+ padding-top: 3px;
+ padding-bottom: 20px;
+ margin-bottom: 3px;
 }
 
+.hisChat
+{
+  display: none;
+  background-color: rgb(0, 0, 0);
+  width: 250px;
+  height: 100vh;
+  
+}
+.hisChat ul
+{
+  list-style: none;
+}
+.hisChat li
+{
+  padding-bottom: 20px;
+}
+.hisChat a
+{
+  padding-left: 10px;
+  color: aliceblue;
+  text-decoration: none;
+}
 
 
