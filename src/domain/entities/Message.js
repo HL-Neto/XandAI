@@ -1,0 +1,78 @@
+/**
+ * Entidade Message - Representa uma mensagem no chat
+ * @class Message
+ */
+export class Message {
+  /**
+   * @param {string} id - ID único da mensagem
+   * @param {string} content - Conteúdo da mensagem
+   * @param {string} sender - Remetente da mensagem ('user' | 'assistant')
+   * @param {Date} timestamp - Data e hora da mensagem
+   * @param {boolean} isTyping - Indica se está digitando
+   * @param {boolean} isStreaming - Indica se está fazendo streaming
+   */
+  constructor(id, content, sender, timestamp = new Date(), isTyping = false, isStreaming = false) {
+    this.id = id;
+    this.content = content;
+    this.sender = sender;
+    this.timestamp = timestamp;
+    this.isTyping = isTyping;
+    this.isStreaming = isStreaming;
+  }
+
+  /**
+   * Verifica se a mensagem é do usuário
+   * @returns {boolean}
+   */
+  isFromUser() {
+    return this.sender === 'user';
+  }
+
+  /**
+   * Verifica se a mensagem é do assistente
+   * @returns {boolean}
+   */
+  isFromAssistant() {
+    return this.sender === 'assistant';
+  }
+
+  /**
+   * Formata a data da mensagem
+   * @returns {string}
+   */
+  getFormattedTime() {
+    return this.timestamp.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  /**
+   * Cria uma mensagem de usuário
+   * @param {string} content - Conteúdo da mensagem
+   * @returns {Message}
+   */
+  static createUserMessage(content) {
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    return new Message(id, content, 'user');
+  }
+
+  /**
+   * Cria uma mensagem do assistente
+   * @param {string} content - Conteúdo da mensagem
+   * @returns {Message}
+   */
+  static createAssistantMessage(content) {
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    return new Message(id, content, 'assistant');
+  }
+
+  /**
+   * Cria uma mensagem de digitação
+   * @returns {Message}
+   */
+  static createTypingMessage() {
+    const id = 'typing-' + Date.now();
+    return new Message(id, '', 'assistant', new Date(), true);
+  }
+}
