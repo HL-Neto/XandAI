@@ -15,7 +15,7 @@ import {
 import { useStableDiffusion } from '../../application/hooks/useStableDiffusion';
 
 /**
- * Botão para gerar imagem baseada na resposta do chat
+ * Button to generate image based on chat response
  */
 const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImageGenerated }) => {
   const { config } = useStableDiffusion();
@@ -23,13 +23,13 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Extrai prompt da resposta do chat
+  // Extract prompt from chat response
   const extractPromptFromResponse = (response) => {
     return response
-      .replace(/```[\s\S]*?```/g, '') // Remove código
+      .replace(/```[\s\S]*?```/g, '') // Remove code
       .replace(/[#*`]/g, '') // Remove markdown
-      .replace(/\n+/g, ' ') // Une linhas
-      .replace(/\s+/g, ' ') // Remove espaços extras
+      .replace(/\n+/g, ' ') // Join lines
+      .replace(/\s+/g, ' ') // Remove extra spaces
       .trim()
       .substring(0, 150) || 'a beautiful, detailed illustration';
   };
@@ -59,7 +59,7 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
     });
 
     if (!response.ok) {
-      throw new Error(`Erro ao salvar imagem no histórico: ${response.status}`);
+      throw new Error(`Error saving image to history: ${response.status}`);
     }
 
     return await response.json();
@@ -67,7 +67,7 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
 
   const handleGenerateImage = async () => {
     if (!config?.enabled) {
-      setError('Stable Diffusion não está habilitado. Configure nas configurações.');
+      setError('Stable Diffusion is not enabled. Configure in settings.');
       return;
     }
 
@@ -98,7 +98,7 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
       });
 
       if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
@@ -112,7 +112,7 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
           try {
             const savedMessage = await saveImageToHistory(messageId, result.imageUrl, result.filename, prompt);
             
-            // Notifica o componente pai sobre a imagem gerada
+            // Notify parent component about generated image
             if (onImageGenerated) {
               onImageGenerated(messageId, {
                 type: 'image',
@@ -133,26 +133,26 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
               });
             }
           } catch (historyError) {
-            console.warn('Erro ao salvar imagem no histórico:', historyError);
-            // Não falha se não conseguir salvar no histórico
+            console.warn('Error saving image to history:', historyError);
+            // Don't fail if can't save to history
           }
         }
       } else {
-        setError(result.error || 'Erro desconhecido ao gerar imagem');
+        setError(result.error || 'Unknown error generating image');
       }
     } catch (err) {
-      setError(`Erro na geração: ${err.message}`);
+      setError(`Generation error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Se não tem config ou não está habilitado, não mostra o botão
+  // If no config or not enabled, don't show button
   if (!config?.enabled) {
     return null;
   }
 
-  // Modo compacto - apenas ícone na linha de informações
+  // Compact mode - only icon in info line
   if (compact) {
     return (
       <>
@@ -203,9 +203,9 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
           )}
         </Button>
 
-        {/* Não mostra imagem no modo compacto - ela aparecerá via histórico */}
+        {/* Don't show image in compact mode - it will appear via history */}
 
-        {/* Progress e error aparecem como toast sutil */}
+        {/* Progress and error appear as subtle toast */}
         {error && (
           <Box sx={{ 
             position: 'fixed', 
@@ -232,10 +232,10 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
     );
   }
 
-  // Modo normal - layout completo
+  // Normal mode - complete layout
   return (
     <Box sx={{ mt: 2, width: '100%' }}>
-      {/* Imagem gerada - centralizada */}
+      {/* Generated image - centered */}
       {generatedImage && (
         <Box sx={{ mt: 2, mb: 2, display: 'flex', justifyContent: 'center' }}>
           <Card 
@@ -288,7 +288,7 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
         </Button>
       </Box>
 
-      {/* Progress bar - centralizada */}
+      {/* Progress bar - centered */}
       {isLoading && (
         <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <LinearProgress 
@@ -317,7 +317,7 @@ const GenerateImageButton = ({ chatResponse, messageId, compact = false, onImage
         </Box>
       )}
 
-      {/* Erro - centralizado */}
+      {/* Error - centered */}
       {error && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Alert 

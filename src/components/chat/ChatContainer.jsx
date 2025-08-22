@@ -68,12 +68,12 @@ const ChatContainer = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /**
-   * Manipula o envio de mensagem
-   * @param {string} message - Mensagem a ser enviada
+   * Handles message sending
+   * @param {string} message - Message to be sent
    */
   const handleSendMessage = async (message) => {
     try {
-      // Se não há sessão atual no chat, cria uma nova
+      // If there's no current session in chat, create a new one
       if (!chatCurrentSessionId && !currentSession) {
         const newSession = await createNewSession();
         if (newSession && newSession.id) {
@@ -84,36 +84,36 @@ const ChatContainer = () => {
       
       await sendMessage(message);
       
-      // Atualiza o histórico após enviar a mensagem
+      // Update history after sending message
       setTimeout(() => {
         fetchChatSessions();
       }, 1000);
     } catch (err) {
-      console.error('Erro ao enviar mensagem:', err);
+      console.error('Error sending message:', err);
     }
   };
 
   /**
-   * Manipula a limpeza do histórico
+   * Handles history clearing
    */
   const handleClearHistory = async () => {
     try {
       await clearHistory();
       setClearDialogOpen(false);
     } catch (err) {
-      console.error('Erro ao limpar histórico:', err);
+      console.error('Error clearing history:', err);
     }
   };
 
   /**
-   * Manipula a abertura do dialog de confirmação
+   * Handles confirmation dialog opening
    */
   const handleClearDialogOpen = () => {
     setClearDialogOpen(true);
   };
 
   /**
-   * Manipula o fechamento do dialog de confirmação
+   * Handles confirmation dialog closing
    */
   const handleClearDialogClose = () => {
     setClearDialogOpen(false);
@@ -127,49 +127,49 @@ const ChatContainer = () => {
   };
 
   /**
-   * Manipula o fechamento do erro
+   * Handles error closing
    */
   const handleCloseError = () => {
     clearError();
   };
 
   /**
-   * Manipula a abertura das configurações
+   * Handles settings opening
    */
   const handleOpenSettings = () => {
     setSettingsDialogOpen(true);
   };
 
   /**
-   * Manipula o fechamento das configurações
+   * Handles settings closing
    */
   const handleCloseSettings = () => {
     setSettingsDialogOpen(false);
   };
 
   /**
-   * Manipula a abertura/fechamento da sidebar
+   * Handles sidebar opening/closing
    */
   const handleToggleSidebar = () => {
     setSidebarOpen(prev => !prev);
   };
 
   /**
-   * Manipula o fechamento da sidebar
+   * Handles sidebar closing
    */
   const handleCloseSidebar = () => {
     setSidebarOpen(false);
   };
 
   /**
-   * Manipula o início de uma nova conversa
+   * Handles starting a new conversation
    */
   const handleNewChat = async () => {
     try {
       const newSession = await createNewSession();
-      clearHistory(); // Limpa as mensagens atuais
+      clearHistory(); // Clear current messages
       
-      // Define a nova sessão como ativa
+      // Set new session as active
       if (newSession && newSession.id) {
         setSession(newSession.id);
 
@@ -177,12 +177,12 @@ const ChatContainer = () => {
       
       setSidebarOpen(false);
     } catch (err) {
-      console.error('Erro ao criar nova conversa:', err);
+      console.error('Error creating new conversation:', err);
     }
   };
 
   /**
-   * Manipula a seleção de uma conversa do histórico
+   * Handles selection of a conversation from history
    */
   const handleSelectChat = async (chat) => {
     try {
@@ -191,16 +191,16 @@ const ChatContainer = () => {
 
       
       if (session) {
-        // Define a sessão atual no useChat
+        // Set current session in useChat
         setSession(session.id);
         
         if (session.messages && session.messages.length > 0) {
-          // Carrega as mensagens da sessão no chat atual
+          // Load session messages into current chat
 
           loadExternalMessages(session.messages, session.id);
 
         } else {
-          // Sessão sem mensagens, apenas limpa o chat e define a sessão
+          // Session without messages, just clear chat and set session
           loadExternalMessages([], session.id);
 
         }
@@ -209,23 +209,23 @@ const ChatContainer = () => {
       }
       setSidebarOpen(false);
     } catch (err) {
-      console.error('Erro ao carregar conversa:', err);
+      console.error('Error loading conversation:', err);
     }
   };
 
   /**
-   * Manipula a busca de conversas
+   * Handles conversation search
    */
   const handleSearchChats = async (query) => {
     try {
       await searchChatSessions(query);
     } catch (err) {
-      console.error('Erro ao buscar conversas:', err);
+      console.error('Error searching conversations:', err);
     }
   };
 
   /**
-   * Lida com a geração de imagem
+   * Handles image generation
    */
   const handleImageGenerated = (messageId, attachment) => {
     if (updateMessageAttachment) {
@@ -234,35 +234,35 @@ const ChatContainer = () => {
   };
 
   /**
-   * Manipula a edição de título
+   * Handles title editing
    */
   const handleEditTitle = async (sessionId, newTitle) => {
     try {
       await updateSessionTitle(sessionId, newTitle);
     } catch (err) {
-      console.error('Erro ao editar título:', err);
+      console.error('Error editing title:', err);
     }
   };
 
   /**
-   * Manipula a exclusão de conversa
+   * Handles conversation deletion
    */
   const handleDeleteChat = async (sessionId) => {
     try {
       await deleteChatSession(sessionId);
     } catch (err) {
-      console.error('Erro ao excluir conversa:', err);
+      console.error('Error deleting conversation:', err);
     }
   };
 
   /**
-   * Manipula erros do histórico
+   * Handles history errors
    */
   const handleCloseHistoryError = () => {
     clearHistoryError();
   };
 
-  // Estilo do container principal
+  // Main container style
   const containerStyle = {
     height: '100vh',
     display: 'flex',
@@ -270,7 +270,7 @@ const ChatContainer = () => {
     overflow: 'hidden',
   };
 
-  // Estilo da área do chat (principal)
+  // Chat area style (main)
   const chatAreaStyle = {
     flex: 1,
     display: 'flex',
@@ -279,7 +279,7 @@ const ChatContainer = () => {
     transition: 'margin-left 0.3s ease-in-out',
   };
 
-  // Estilo do paper principal (sem border radius)
+  // Main paper style (no border radius)
   const paperStyle = {
     height: '100%',
     display: 'flex',
@@ -290,7 +290,7 @@ const ChatContainer = () => {
     backgroundColor: theme.palette.background.paper,
   };
 
-  // Estilo da área de mensagens
+  // Messages area style
   const messagesAreaStyle = {
     flex: 1,
     overflow: 'hidden',
@@ -315,7 +315,7 @@ const ChatContainer = () => {
         isLoadingSession={isLoadingSession}
       />
 
-      {/* Área principal do chat */}
+      {/* Main chat area */}
       <Box sx={chatAreaStyle}>
         <Paper sx={paperStyle} elevation={0}>
           {/* Cabeçalho do chat */}
@@ -328,7 +328,7 @@ const ChatContainer = () => {
             isTyping={isTyping}
           />
 
-          {/* Área de mensagens */}
+          {/* Messages area */}
           <Box sx={messagesAreaStyle}>
             <MessageList
               messages={messages}
@@ -338,7 +338,7 @@ const ChatContainer = () => {
             />
           </Box>
 
-          {/* Input de mensagem */}
+          {/* Message input */}
           <MessageInput
             onSendMessage={handleSendMessage}
             disabled={isLoading}
@@ -352,7 +352,7 @@ const ChatContainer = () => {
         </Paper>
       </Box>
 
-      {/* Dialog de confirmação para limpar chat */}
+      {/* Confirmation dialog to clear chat */}
       <Dialog
         open={clearDialogOpen}
         onClose={handleClearDialogClose}
@@ -390,13 +390,13 @@ const ChatContainer = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Dialog de configurações */}
+      {/* Settings dialog */}
       <SettingsDialog
         open={settingsDialogOpen}
         onClose={handleCloseSettings}
       />
 
-      {/* Snackbar para erros */}
+      {/* Snackbar for errors */}
       <Snackbar
         open={!!error}
         autoHideDuration={6000}
@@ -413,7 +413,7 @@ const ChatContainer = () => {
         </Alert>
       </Snackbar>
 
-      {/* Snackbar para erros do histórico */}
+      {/* Snackbar for history errors */}
       <Snackbar
         open={!!historyError}
         autoHideDuration={6000}

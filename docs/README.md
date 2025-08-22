@@ -1,315 +1,334 @@
-# XandAI - Interface de Chat com React e Material-UI
+# XandAI - Chat Interface with React and Material-UI
 
-## 📖 Visão Geral
+## 📖 Overview
 
-XandAI é uma interface de chat responsiva e moderna desenvolvida com React e Material-UI, projetada para interações com LLMs (Large Language Models). O projeto segue princípios de Clean Code e Clean Architecture, oferecendo uma experiência de usuário intuitiva e uma base de código mantível.
+XandAI is a responsive and modern chat interface developed with React and Material-UI, designed for interactions with LLMs (Large Language Models) and image generation capabilities. The project follows Clean Code and Clean Architecture principles, offering an intuitive user experience and maintainable codebase.
 
-## ✨ Características Principais
+## ✨ Key Features
 
-- **Interface Responsiva**: Funciona perfeitamente em desktop, tablet e mobile
-- **Design Moderno**: Interface clean usando Material-UI com tema personalizado
-- **Arquitetura Limpa**: Separação clara de responsabilidades e código organizados
-- **API Mock**: Simulação de respostas de IA para desenvolvimento e testes
-- **Real-time UX**: Indicadores de digitação e animações suaves
-- **Tema Personalizado**: Design system consistente com cores e tipografia do XandAI
+- **Responsive Interface**: Works perfectly on desktop, tablet and mobile
+- **Modern Design**: Clean interface using Material-UI with custom theme
+- **Clean Architecture**: Clear separation of responsibilities and organized code
+- **Mock API**: AI response simulation for development and testing
+- **Real-time UX**: Typing indicators and smooth animations
+- **Custom Theme**: Consistent design system with XandAI colors and typography
+- **Image Generation**: Integration with Stable Diffusion for image creation
+- **Chat History**: Persistent conversations with backend storage
+- **Authentication**: User login and profile management
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
-O projeto segue a Clean Architecture, organizando o código em camadas bem definidas:
+The project follows Clean Architecture, organizing code in well-defined layers:
 
 ```
 src/
-├── domain/                 # Camada de Domínio
-│   ├── entities/          # Entidades de negócio
-│   └── repositories/      # Interfaces dos repositórios
-├── infrastructure/        # Camada de Infraestrutura
-│   └── mock-api/         # Implementações mock da API
-├── application/           # Camada de Aplicação
-│   ├── services/         # Serviços de aplicação
-│   └── hooks/            # Hooks personalizados
-├── components/           # Camada de Apresentação
-│   ├── chat/            # Componentes específicos do chat
-│   └── common/          # Componentes reutilizáveis
-└── styles/              # Estilos e temas
-    └── theme/           # Configuração do tema Material-UI
+├── domain/                 # Domain Layer
+│   ├── entities/          # Business entities
+│   └── repositories/      # Repository interfaces
+├── infrastructure/        # Infrastructure Layer
+│   ├── api/              # API implementations
+│   └── mock-api/         # Mock API implementations
+├── application/           # Application Layer
+│   ├── services/         # Application services
+│   └── hooks/            # Custom hooks
+├── components/           # Presentation Layer
+│   ├── chat/            # Chat-specific components
+│   ├── auth/            # Authentication components
+│   ├── settings/        # Settings components
+│   └── common/          # Reusable components
+└── styles/              # Styles and themes
+    └── theme/           # Material-UI theme configuration
 ```
 
-## 🚀 Início Rápido
+## 🚀 Quick Start
 
-### Pré-requisitos
+### Prerequisites
 
-- Node.js (versão 16 ou superior)
-- npm ou yarn
+- Node.js (version 16 or higher)
+- npm or yarn
 
-### Instalação
+### Installation
 
-1. Clone o repositório
+1. Clone the repository
 ```bash
 git clone <repository-url>
 cd XandAI
 ```
 
-2. Instale as dependências
+2. Install dependencies
 ```bash
 npm install
 ```
 
-3. Inicie o servidor de desenvolvimento
+3. Start development server
 ```bash
 npm start
 ```
 
-4. Acesse a aplicação em `http://localhost:3000`
+4. Access the application at `http://localhost:3000`
 
-## 📱 Funcionalidades
+## 📱 Features
 
-### Interface do Chat
+### Chat Interface
 
-- **Mensagens em Tempo Real**: Envio e recebimento de mensagens com feedback visual
-- **Indicador de Digitação**: Mostra quando o XandAI está processando uma resposta
-- **Histórico de Conversas**: Mantém o histórico das mensagens da sessão
-- **Limpeza de Chat**: Opção para limpar todo o histórico
-- **Timestamps**: Horário de envio de cada mensagem
-- **Avatars**: Identificação visual clara entre usuário e IA
+- **Real-time Messages**: Send and receive messages with visual feedback
+- **Typing Indicator**: Shows when XandAI is processing a response
+- **Conversation History**: Maintains message history from session
+- **Chat Clearing**: Option to clear all history
+- **Timestamps**: Send time for each message
+- **Avatars**: Clear visual identification between user and AI
+- **Image Generation**: Generate images from chat responses
+- **Attachments**: View generated images in chat history
 
-### Responsividade
+### Responsiveness
 
-- **Layout Adaptativo**: Interface otimizada para diferentes tamanhos de tela
-- **Touch-Friendly**: Botões e áreas de toque adequados para dispositivos móveis
-- **Navegação Intuitiva**: Menu hamburger em dispositivos móveis
-- **Typography Escalável**: Tamanhos de fonte que se ajustam ao dispositivo
+- **Adaptive Layout**: Interface optimized for different screen sizes
+- **Touch-Friendly**: Buttons and touch areas suitable for mobile devices
+- **Intuitive Navigation**: Hamburger menu on mobile devices
+- **Scalable Typography**: Font sizes that adjust to device
 
-### Experiência do Usuário
+### User Experience
 
-- **Animações Suaves**: Transições e animações que melhoram a percepção de performance
-- **Feedback Visual**: Estados de loading, erro e sucesso claramente indicados
-- **Tooltips Informativos**: Dicas de uso em botões e funcionalidades
-- **Tratamento de Erros**: Mensagens de erro amigáveis e ações de recuperação
+- **Smooth Animations**: Transitions and animations that improve performance perception
+- **Visual Feedback**: Loading, error and success states clearly indicated
+- **Informative Tooltips**: Usage tips on buttons and features
+- **Error Handling**: Friendly error messages and recovery actions
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Technologies Used
 
 ### Core
-- **React 19.1.1**: Biblioteca principal para construção da interface
-- **Material-UI 7.3.1**: Sistema de design e componentes UI
-- **Emotion**: Biblioteca de CSS-in-JS para estilização
+- **React 19.1.1**: Main library for interface construction
+- **Material-UI 7.3.1**: Design system and UI components
+- **Emotion**: CSS-in-JS library for styling
 
-### Desenvolvimento
-- **React Scripts**: Configuração e build tools
-- **Testing Library**: Ferramentas para testes automatizados
-- **Web Vitals**: Métricas de performance da aplicação
+### Development
+- **React Scripts**: Configuration and build tools
+- **Testing Library**: Tools for automated testing
+- **Web Vitals**: Application performance metrics
 
-## 📊 Estrutura de Componentes
+## 📊 Component Structure
 
-### Componentes Principais
+### Main Components
 
 #### `ChatContainer`
-Container principal que orquestra toda a interface do chat.
+Main container that orchestrates the entire chat interface.
 
-**Responsabilidades:**
-- Gerenciamento do estado global do chat
-- Coordenação entre header, lista de mensagens e input
-- Tratamento de erros e dialogs de confirmação
+**Responsibilities:**
+- Global chat state management
+- Coordination between header, message list and input
+- Error handling and confirmation dialogs
 
 #### `ChatHeader`
-Cabeçalho do chat com informações do XandAI e ações.
+Chat header with XandAI information and actions.
 
-**Funcionalidades:**
-- Status do bot (online/digitando)
-- Contador de mensagens
-- Ações de limpar e atualizar chat
-- Menu mobile
+**Features:**
+- Bot status (online/typing)
+- Message counter
+- Clear and refresh chat actions
+- Mobile menu
 
 #### `MessageList`
-Lista de mensagens com scroll automático e welcome screen.
+Message list with auto-scroll and welcome screen.
 
-**Características:**
-- Scroll automático para novas mensagens
-- Tela de boas-vindas para novos usuários
-- Divisores de data
-- Otimização de performance para muitas mensagens
+**Characteristics:**
+- Auto-scroll for new messages
+- Welcome screen for new users
+- Date dividers
+- Performance optimization for many messages
 
 #### `ChatMessage`
-Componente individual para cada mensagem.
+Individual component for each message.
 
-**Elementos:**
-- Balão de mensagem estilizado
-- Avatar do remetente
-- Timestamp formatado
-- Indicador de digitação animado
+**Elements:**
+- Styled message bubble
+- Sender avatar
+- Formatted timestamp
+- Animated typing indicator
+- Image attachments display
 
 #### `MessageInput`
-Campo de entrada com funcionalidades avançadas.
+Input field with advanced features.
 
-**Recursos:**
-- Input multiline com auto-resize
-- Botões de ação (enviar, anexo, emoji, áudio)
-- Estados de loading e disabled
-- Suporte a atalhos de teclado
+**Resources:**
+- Multiline input with auto-resize
+- Action buttons (send, attach, emoji, audio)
+- Loading and disabled states
+- Keyboard shortcut support
 
-## 🎨 Sistema de Design
+#### `GenerateImageButton`
+Component for generating images from text.
 
-### Paleta de Cores
+**Features:**
+- Extract prompts from chat responses
+- Integration with Stable Diffusion
+- Loading states and error handling
+- Attachment to chat messages
+
+## 🎨 Design System
+
+### Color Palette
 
 ```javascript
-// Cores Principais
-primary: '#1976d2'      // Azul principal do XandAI
-secondary: '#9c27b0'    // Roxo secundário
-background: '#f5f5f5'   // Fundo padrão
-paper: '#ffffff'        // Fundo de cards/papers
+// Primary Colors
+primary: '#1976d2'      // XandAI main blue
+secondary: '#9c27b0'    // Secondary purple
+background: '#f5f5f5'   // Default background
+paper: '#ffffff'        // Card/paper background
 
-// Estados
-success: '#4caf50'      // Verde para sucesso
-error: '#f44336'        // Vermelho para erros
-warning: '#ff9800'      // Laranja para avisos
-info: '#2196f3'         // Azul para informações
+// States
+success: '#4caf50'      // Green for success
+error: '#f44336'        // Red for errors
+warning: '#ff9800'      // Orange for warnings
+info: '#2196f3'         // Blue for information
 ```
 
-### Tipografia
+### Typography
 
-- **Fonte Principal**: Roboto
-- **Hierarquia**: H1-H6 com pesos e tamanhos definidos
-- **Responsividade**: Tamanhos adaptativos por breakpoint
-- **Legibilidade**: Line-height otimizado para leitura
+- **Main Font**: Roboto
+- **Hierarchy**: H1-H6 with defined weights and sizes
+- **Responsiveness**: Adaptive sizes per breakpoint
+- **Readability**: Optimized line-height for reading
 
-### Espaçamento
+### Spacing
 
-- **Sistema 8px**: Múltiplos de 8 para consistência
+- **8px System**: Multiples of 8 for consistency
 - **Breakpoints**: xs, sm, md, lg, xl
-- **Grid System**: Layout flexível e responsivo
+- **Grid System**: Flexible and responsive layout
 
-## 🔧 Configuração e Personalização
+## 🔧 Configuration and Customization
 
-### Tema
+### Theme
 
-O tema pode ser customizado em `src/styles/theme/theme.js`:
+The theme can be customized in `src/styles/theme/theme.js`:
 
 ```javascript
-// Personalizar cores
+// Customize colors
 const customTheme = createTheme({
   palette: {
     primary: {
-      main: '#sua-cor-aqui',
+      main: '#your-color-here',
     },
   },
 });
 ```
 
-### API Mock
+### Mock API
 
-As respostas do mock podem ser personalizadas em `src/infrastructure/mock-api/MockChatRepository.js`:
+Mock responses can be customized in `src/infrastructure/mock-api/MockChatRepository.js`:
 
 ```javascript
-// Adicionar novas respostas
+// Add new responses
 this.mockResponses = [
-  "Sua resposta personalizada aqui",
-  // ... mais respostas
+  "Your custom response here",
+  // ... more responses
 ];
 ```
 
-## 🧪 Testes
+## 🧪 Testing
 
-### Executar Testes
+### Run Tests
 
 ```bash
 npm test
 ```
 
-### Estrutura de Testes
+### Test Structure
 
 ```
 src/
-├── __tests__/           # Testes unitários
+├── __tests__/           # Unit tests
 ├── components/
-│   └── __tests__/       # Testes de componentes
+│   └── __tests__/       # Component tests
 └── application/
-    └── __tests__/       # Testes de lógica de negócio
+    └── __tests__/       # Business logic tests
 ```
 
 ## 📈 Performance
 
-### Otimizações Implementadas
+### Implemented Optimizations
 
-- **Code Splitting**: Carregamento lazy de componentes
-- **Memoization**: React.memo em componentes que re-renderizam frequentemente
-- **Virtual Scrolling**: Para listas grandes de mensagens
-- **Bundle Analysis**: Otimização do tamanho do bundle
+- **Code Splitting**: Lazy loading of components
+- **Memoization**: React.memo on frequently re-rendering components
+- **Virtual Scrolling**: For large message lists
+- **Bundle Analysis**: Bundle size optimization
 
-### Métricas Web Vitals
+### Web Vitals Metrics
 
 - **LCP (Largest Contentful Paint)**: < 2.5s
 - **FID (First Input Delay)**: < 100ms
 - **CLS (Cumulative Layout Shift)**: < 0.1
 
-## 🔒 Segurança
+## 🔒 Security
 
-### Boas Práticas Implementadas
+### Implemented Best Practices
 
-- **XSS Prevention**: Sanitização de inputs
-- **Content Security Policy**: Headers de segurança
-- **Dependency Security**: Auditoria regular de dependências
-- **Data Validation**: Validação de entrada em todas as camadas
+- **XSS Prevention**: Input sanitization
+- **Content Security Policy**: Security headers
+- **Dependency Security**: Regular dependency auditing
+- **Data Validation**: Input validation at all layers
 
-## 🌐 Acessibilidade
+## 🌐 Accessibility
 
-### Conformidade WCAG
+### WCAG Compliance
 
-- **Contraste**: Ratios de contraste adequados
-- **Navegação por Teclado**: Suporte completo
-- **Screen Readers**: ARIA labels e roles
-- **Focus Management**: Ordem lógica de foco
+- **Contrast**: Adequate contrast ratios
+- **Keyboard Navigation**: Full support
+- **Screen Readers**: ARIA labels and roles
+- **Focus Management**: Logical focus order
 
-## 📦 Build e Deploy
+## 📦 Build and Deploy
 
-### Build para Produção
+### Production Build
 
 ```bash
 npm run build
 ```
 
-### Variáveis de Ambiente
+### Environment Variables
 
 ```bash
 # .env.production
 REACT_APP_API_URL=https://api.xandai.com
 REACT_APP_VERSION=1.0.0
+REACT_APP_BACKEND_URL=https://backend.xandai.com
 ```
 
-## 🤝 Contribuição
+## 🤝 Contributing
 
-### Fluxo de Desenvolvimento
+### Development Flow
 
-1. Fork o projeto
-2. Crie uma branch feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### Padrões de Código
+### Code Standards
 
-- **ESLint**: Configuração para React
-- **Prettier**: Formatação automática
-- **Conventional Commits**: Mensagens de commit padronizadas
-- **Code Review**: Obrigatório para mudanças
+- **ESLint**: Configuration for React
+- **Prettier**: Automatic formatting
+- **Conventional Commits**: Standardized commit messages
+- **Code Review**: Mandatory for changes
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+This project is under the MIT license. See the `LICENSE` file for more details.
 
-## 🆘 Suporte
+## 🆘 Support
 
-### Documentação Adicional
+### Additional Documentation
 
-- [Guia de Componentes](./components.md)
-- [Arquitetura Detalhada](./architecture.md)
+- [Component Guide](./components.md)
+- [Detailed Architecture](./architecture.md)
 - [API Reference](./api.md)
 - [Troubleshooting](./troubleshooting.md)
 
-### Contato
+### Contact
 
-- **Email**: suporte@xandai.com
-- **Issues**: [GitHub Issues](https://github.com/seu-usuario/xandai/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/seu-usuario/xandai/discussions)
+- **Email**: support@xandai.com
+- **Issues**: [GitHub Issues](https://github.com/XandAI-project/XandAI/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/XandAI-project/XandAI/discussions)
 
 ---
 
-Desenvolvido com ❤️ pelo time XandAI
+Developed with ❤️ by the XandAI team

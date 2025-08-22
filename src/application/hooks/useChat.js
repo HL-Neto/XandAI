@@ -17,7 +17,7 @@ export const useChat = () => {
   const [isBackendConnected, setIsBackendConnected] = useState(false);
 
   /**
-   * Inicializa o serviço de chat baseado na disponibilidade do backend
+   * Initializes chat service based on backend availability
    */
   useEffect(() => {
     const initializeChatService = async () => {
@@ -26,17 +26,17 @@ export const useChat = () => {
         const backendAvailable = await apiRepository.isBackendAvailable();
         
         if (backendAvailable) {
-          console.log('✅ Backend disponível - usando ChatApiRepository');
+          console.log('✅ Backend available - using ChatApiRepository');
           setChatService(new ChatService(apiRepository));
           setIsBackendConnected(true);
         } else {
-          console.log('⚠️ Backend indisponível - usando MockChatRepository');
+          console.log('⚠️ Backend unavailable - using MockChatRepository');
           setChatService(new ChatService(new MockChatRepository()));
           setIsBackendConnected(false);
         }
       } catch (error) {
-        console.error('Erro ao inicializar chat service:', error);
-        // Fallback para mock em caso de erro
+        console.error('Error initializing chat service:', error);
+        // Fallback to mock in case of error
         setChatService(new ChatService(new MockChatRepository()));
         setIsBackendConnected(false);
       }
@@ -46,7 +46,7 @@ export const useChat = () => {
   }, []);
 
   /**
-   * Carrega o histórico de mensagens quando o serviço está pronto
+   * Loads message history when service is ready
    */
   useEffect(() => {
     if (!chatService) return;
@@ -56,8 +56,8 @@ export const useChat = () => {
         const history = await chatService.getMessageHistory();
         setMessages(history);
       } catch (err) {
-        console.error('Erro ao carregar histórico:', err);
-        setError('Falha ao carregar histórico de mensagens');
+        console.error('Error loading history:', err);
+        setError('Failed to load message history');
       }
     };
 
@@ -65,18 +65,18 @@ export const useChat = () => {
   }, [chatService]);
 
   /**
-   * Envia mensagem usando o fluxo local (frontend) como fallback
+   * Sends message using local flow (frontend) as fallback
    */
   const sendMessageLocally = useCallback(async (messageContent, existingAssistantId = null) => {
     try {
       let assistantMessageId = existingAssistantId;
       
       if (!assistantMessageId) {
-        // Adiciona a mensagem do usuário imediatamente
+        // Add user message immediately
         const userMessage = Message.createUserMessage(messageContent);
         setMessages(prev => [...prev, userMessage]);
 
-        // Cria mensagem de resposta vazia para streaming
+        // Create empty response message for streaming
         assistantMessageId = `msg_${Date.now()}_assistant`;
         const streamingMessage = Message.createAssistantMessage('');
         streamingMessage.id = assistantMessageId;
@@ -100,10 +100,10 @@ export const useChat = () => {
         );
       };
 
-      // Envia mensagem com streaming
+      // Send message with streaming
       const response = await chatService.sendMessageWithoutUserSave(messageContent, onToken);
 
-      // Atualiza a mensagem final do assistente
+      // Update final assistant message
       setMessages(prev => 
         prev.map(msg => 
           msg.id === assistantMessageId 
@@ -188,15 +188,15 @@ export const useChat = () => {
             contextualMessage = `${context}Usuário: ${messageContent}\n\nPor favor, responda diretamente sem prefixos:`;
           }
         } catch (contextError) {
-          console.warn('Erro ao buscar contexto, usando mensagem simples:', contextError);
-          // Continua com mensagem simples se não conseguir buscar contexto
+          console.warn('Error fetching context, using simple message:', contextError);
+          // Continue with simple message if can't fetch context
         }
       }
 
-      // SEMPRE usa o streaming do frontend para melhor UX, mas com contexto se disponível
+      // ALWAYS use frontend streaming for better UX, but with context if available
       const response = await chatService.sendMessageWithoutUserSave(contextualMessage, onToken);
 
-      // Atualiza a mensagem final do assistente
+      // Update final assistant message
       setMessages(prev => 
         prev.map(msg => 
           msg.id === assistantMessageId 
@@ -205,7 +205,7 @@ export const useChat = () => {
         )
       );
 
-      // Salva a mensagem do assistente no backend
+      // Save assistant message to backend
       if (isBackendConnected && chatService?.chatRepository?.saveMessageWithId) {
         try {
           await chatService.chatRepository.saveMessageWithId(
@@ -214,32 +214,32 @@ export const useChat = () => {
             'assistant'
           );
         } catch (error) {
-          console.warn('Erro ao salvar mensagem do assistente no backend:', error);
+          console.warn('Error saving assistant message to backend:', error);
         }
       }
 
-      // Se há uma sessão ativa, salva no backend APÓS o streaming
+      // If there's an active session, save to backend AFTER streaming
       if (currentSessionId) {
         try {
           const chatHistoryService = await import('../../services/ChatHistoryService.js');
           
-          // Salva mensagem do usuário
+          // Save user message
           await chatHistoryService.default.sendMessage(currentSessionId, messageContent, 'user');
           
-          // Salva resposta do assistente
+          // Save assistant response
           await chatHistoryService.default.sendMessage(currentSessionId, response.assistantMessage.content, 'assistant');
 
         } catch (backendError) {
-          console.error('Erro ao salvar mensagens no backend:', backendError);
-          // Não interrompe o fluxo - o streaming já funcionou
+          console.error('Error saving messages to backend:', backendError);
+          // Don't interrupt flow - streaming already worked
         }
       }
 
     } catch (err) {
-      console.error('Erro ao enviar mensagem:', err);
-      setError(err.message || 'Falha ao enviar mensagem');
+      console.error('Error sending message:', err);
+      setError(err.message || 'Failed to send message');
       
-      // Remove mensagem de streaming em caso de erro
+      // Remove streaming message in case of error
       setMessages(prev => prev.filter(msg => !msg.isStreaming));
     } finally {
       setIsLoading(false);
@@ -247,7 +247,7 @@ export const useChat = () => {
   }, [chatService, currentSessionId, sendMessageLocally]);
 
   /**
-   * Limpa todo o histórico de mensagens
+   * Clears all message history
    */
   const clearHistory = useCallback(async () => {
     try {
@@ -255,20 +255,20 @@ export const useChat = () => {
       setMessages([]);
       setError(null);
     } catch (err) {
-      console.error('Erro ao limpar histórico:', err);
-      setError(err.message || 'Falha ao limpar histórico');
+      console.error('Error clearing history:', err);
+      setError(err.message || 'Failed to clear history');
     }
   }, [chatService]);
 
   /**
-   * Limpa o erro atual
+   * Clears current error
    */
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
   /**
-   * Cria uma nova sessão de chat
+   * Creates a new chat session
    */
   const startNewSession = useCallback(() => {
     chatService.createNewSession();
@@ -277,45 +277,45 @@ export const useChat = () => {
   }, [chatService]);
 
   /**
-   * Verifica se há uma mensagem sendo digitada
+   * Checks if there's a message being typed
    */
   const isTyping = messages.some(msg => msg.isTyping);
 
   /**
-   * Obtém a contagem de mensagens
+   * Gets message count
    */
   const messageCount = messages.filter(msg => !msg.isTyping).length;
 
   /**
-   * Verifica se há mensagens no chat
+   * Checks if there are messages in chat
    */
   const hasMessages = messageCount > 0;
 
   /**
-   * Força uma nova instância do ChatService (útil quando configuração muda)
+   * Forces a new ChatService instance (useful when configuration changes)
    */
   const refreshChatService = useCallback(() => {
-    // Força recriação do serviço
+    // Force service recreation
     window.location.reload();
   }, []);
 
   /**
-   * Carrega mensagens externas (de uma sessão do backend)
-   * @param {Array} externalMessages - Mensagens da sessão
-   * @param {string} sessionId - ID da sessão
+   * Loads external messages (from a backend session)
+   * @param {Array} externalMessages - Session messages
+   * @param {string} sessionId - Session ID
    */
   const loadExternalMessages = useCallback((externalMessages, sessionId = null) => {
     if (!Array.isArray(externalMessages)) {
-      console.warn('loadExternalMessages: externalMessages deve ser um array');
+      console.warn('loadExternalMessages: externalMessages must be an array');
       return;
     }
 
-    // Define a sessão atual
+    // Set current session
     if (sessionId) {
       setCurrentSessionId(sessionId);
     }
 
-    // Converte mensagens do backend para o formato do frontend
+    // Convert backend messages to frontend format
     const formattedMessages = externalMessages.map(msg => {
       const sender = msg.role === 'user' ? 'user' : 'assistant';
       const timestamp = msg.createdAt ? new Date(msg.createdAt) : new Date();
@@ -329,7 +329,7 @@ export const useChat = () => {
         false  // isStreaming
       );
       
-      // Adiciona anexos se existirem
+      // Add attachments if they exist
       if (msg.attachments && Array.isArray(msg.attachments)) {
         console.log('Adding attachments to message:', msg.id, msg.attachments);
         message.attachments = msg.attachments;
@@ -343,22 +343,22 @@ export const useChat = () => {
   }, []);
 
   /**
-   * Define a sessão atual
-   * @param {string} sessionId - ID da sessão
+   * Sets current session
+   * @param {string} sessionId - Session ID
    */
   const setSession = useCallback((sessionId) => {
     setCurrentSessionId(sessionId);
   }, []);
 
   /**
-   * Atualiza os anexos de uma mensagem específica
-   * @param {string} messageId - ID da mensagem
-   * @param {Object} attachment - Anexo a ser adicionado
+   * Updates attachments of a specific message
+   * @param {string} messageId - Message ID
+   * @param {Object} attachment - Attachment to be added
    */
   const updateMessageAttachment = useCallback((messageId, attachment) => {
     setMessages(prev => prev.map(msg => {
       if (msg.id === messageId) {
-        // Cria uma cópia da mensagem e adiciona o anexo
+        // Create a copy of the message and add the attachment
         const updatedMsg = Object.assign(Object.create(Object.getPrototypeOf(msg)), msg);
         if (!updatedMsg.attachments) {
           updatedMsg.attachments = [];
