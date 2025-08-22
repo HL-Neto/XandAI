@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -9,7 +9,12 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
-  Tooltip
+  Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -18,9 +23,13 @@ import {
   Circle as OnlineIcon,
   Refresh as RefreshIcon,
   ClearAll as ClearIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+  AccountCircle as AccountIcon
 } from '@mui/icons-material';
 import ModelSelector from './ModelSelector';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Componente do cabeçalho do chat
@@ -43,34 +52,66 @@ const ChatHeader = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { user, logout, getFullName, getInitials } = useAuth();
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
 
   // Status do bot
   const botStatus = isTyping ? 'digitando...' : 'online';
   const statusColor = isTyping ? 'warning' : 'success';
 
+  /**
+   * Abre o menu do usuário
+   */
+  const handleUserMenuOpen = (event) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  /**
+   * Fecha o menu do usuário
+   */
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
+  };
+
+  /**
+   * Manipula logout do usuário
+   */
+  const handleLogout = () => {
+    handleUserMenuClose();
+    logout();
+  };
+
+  /**
+   * Manipula abertura de perfil
+   */
+  const handleProfile = () => {
+    handleUserMenuClose();
+    // TODO: Implementar página de perfil
+    console.log('Abrir perfil');
+  };
+
   return (
     <AppBar 
       position="static" 
-      elevation={1}
+      elevation={0}
       sx={{
         backgroundColor: theme.palette.background.paper,
         color: theme.palette.text.primary,
         borderBottom: `1px solid ${theme.palette.divider}`,
+        borderRadius: 0,
       }}
     >
       <Toolbar sx={{ px: { xs: 1, sm: 2 } }}>
-        {/* Botão de menu (mobile) */}
-        {isMobile && (
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={onMenuClick}
-            sx={{ mr: 1 }}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
+        {/* Botão de menu */}
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          onClick={onMenuClick}
+          sx={{ mr: 1 }}
+        >
+          <MenuIcon />
+        </IconButton>
 
         {/* Avatar e informações do bot */}
         <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
@@ -179,13 +220,25 @@ const ChatHeader = ({
             </Tooltip>
           )}
 
-          {/* Botão de mais opções */}
-          <Tooltip title="Mais opções">
+          {/* Avatar do usuário */}
+          <Tooltip title={`${getFullName()} - Clique para opções`}>
             <IconButton
               color="inherit"
+              onClick={handleUserMenuOpen}
               size={isMobile ? 'small' : 'medium'}
+              sx={{ ml: 1 }}
             >
-              <MoreIcon />
+              <Avatar
+                sx={{
+                  width: isMobile ? 28 : 32,
+                  height: isMobile ? 28 : 32,
+                  backgroundColor: theme.palette.secondary.main,
+                  fontSize: isMobile ? '0.8rem' : '0.9rem',
+                }}
+                src={user?.avatar}
+              >
+                {getInitials()}
+              </Avatar>
             </IconButton>
           </Tooltip>
         </Box>
@@ -201,6 +254,65 @@ const ChatHeader = ({
           }}
         />
       )}
+
+      {/* Menu do usuário */}
+      <Menu
+        anchorEl={userMenuAnchor}
+        open={Boolean(userMenuAnchor)}
+        onClose={handleUserMenuClose}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            minWidth: 200,
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+          }
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        {/* Informações do usuário */}
+        <Box sx={{ p: 2, pb: 1 }}>
+          <Typography variant="subtitle2" fontWeight={600}>
+            {getFullName()}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {user?.email}
+          </Typography>
+        </Box>
+
+        <Divider />
+
+        {/* Opções do menu */}
+        <MenuItem onClick={handleProfile}>
+          <ListItemIcon>
+            <PersonIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>
+            Meu Perfil
+          </ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={onSettings}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>
+            Configurações
+          </ListItemText>
+        </MenuItem>
+
+        <Divider />
+
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>
+            Sair
+          </ListItemText>
+        </MenuItem>
+      </Menu>
     </AppBar>
   );
 };

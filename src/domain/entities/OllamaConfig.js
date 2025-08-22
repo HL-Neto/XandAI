@@ -9,7 +9,7 @@ export class OllamaConfig {
    * @param {string} selectedModel - Modelo selecionado
    * @param {boolean} enabled - Se a integração está habilitada
    */
-  constructor(baseUrl = 'http://localhost:11434', timeout = 30000, selectedModel = '', enabled = false) {
+  constructor(baseUrl = 'http://localhost:11434', timeout = 600000, selectedModel = '', enabled = false) {
     this.baseUrl = baseUrl;
     this.timeout = timeout;
     this.selectedModel = selectedModel;

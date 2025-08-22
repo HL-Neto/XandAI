@@ -22,24 +22,36 @@ import {
   Tooltip,
   Divider,
   Paper,
-  Grid
+  Grid,
+  Tabs,
+  Tab,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Slider
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Settings as SettingsIcon,
   Check as CheckIcon,
   Error as ErrorIcon,
+  Warning as WarningIcon,
   Download as DownloadIcon,
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Memory as MemoryIcon,
   Speed as SpeedIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Image as ImageIcon,
+  SmartToy as SmartToyIcon
 } from '@mui/icons-material';
 import { useOllama } from '../../application/hooks/useOllama';
+import { useStableDiffusion } from '../../application/hooks/useStableDiffusion';
+import { StableDiffusionConfig } from '../../domain/entities/StableDiffusionConfig';
 
 /**
- * Dialog de configurações do OLLAMA
+ * Dialog de configurações do OLLAMA e Stable Diffusion
  * @param {Object} props - Propriedades do componente
  * @param {boolean} props.open - Se o dialog está aberto
  * @param {Function} props.onClose - Callback para fechar
@@ -59,6 +71,23 @@ const SettingsDialog = ({ open, onClose }) => {
     toggleIntegration
   } = useOllama();
 
+  const {
+    config: sdConfig,
+    models: sdModels,
+    serviceStatus: sdServiceStatus,
+    isLoading: sdIsLoading,
+    error: sdError,
+    updateConfig: updateSdConfig,
+    testConnection: testSdConnection,
+    refreshModels: refreshSdModels,
+    selectModel: selectSdModel,
+    toggleIntegration: toggleSdIntegration
+  } = useStableDiffusion();
+
+  // Estados para controle das tabs
+  const [currentTab, setCurrentTab] = useState(0);
+
+  // Estados do Ollama
   const [localConfig, setLocalConfig] = useState({
     baseUrl: 'http://localhost:11434',
     timeout: 30000,
@@ -70,7 +99,24 @@ const SettingsDialog = ({ open, onClose }) => {
   const [isTesting, setIsTesting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Sincroniza configuração local com a global
+  // Estados do Stable Diffusion
+  const [localSdConfig, setLocalSdConfig] = useState({
+    baseUrl: 'http://192.168.3.70:7861',
+    model: 'v1-5-pruned-emaonly.safetensors',
+    steps: 20,
+    width: 512,
+    height: 512,
+    cfgScale: 7,
+    sampler: 'Euler a',
+    enabled: false,
+    token: ''
+  });
+
+  const [sdTestResult, setSdTestResult] = useState(null);
+  const [isSdTesting, setIsSdTesting] = useState(false);
+  const [hasSdUnsavedChanges, setHasSdUnsavedChanges] = useState(false);
+
+  // Sincroniza configuração local com a global - Ollama
   useEffect(() => {
     if (config) {
       setLocalConfig({
@@ -82,6 +128,24 @@ const SettingsDialog = ({ open, onClose }) => {
       setHasUnsavedChanges(false);
     }
   }, [config]);
+
+  // Sincroniza configuração local com a global - Stable Diffusion
+  useEffect(() => {
+    if (sdConfig) {
+      setLocalSdConfig({
+        baseUrl: sdConfig.baseUrl,
+        model: sdConfig.model,
+        steps: sdConfig.steps,
+        width: sdConfig.width,
+        height: sdConfig.height,
+        cfgScale: sdConfig.cfgScale,
+        sampler: sdConfig.sampler,
+        enabled: sdConfig.enabled,
+        token: sdConfig.token || ''
+      });
+      setHasSdUnsavedChanges(false);
+    }
+  }, [sdConfig]);
 
   /**
    * Manipula mudanças nos campos de configuração
@@ -123,6 +187,8 @@ const SettingsDialog = ({ open, onClose }) => {
       await updateConfig(localConfig);
       setHasUnsavedChanges(false);
       setTestResult(null);
+      // Notifica que as configurações foram salvas
+      console.log('Configurações salvas. Chat será atualizado na próxima mensagem.');
     } catch (error) {
       console.error('Erro ao salvar configuração:', error);
     }
@@ -134,11 +200,90 @@ const SettingsDialog = ({ open, onClose }) => {
    */
   const handleSelectModel = async (modelName) => {
     try {
+      console.log('Selecionando modelo:', modelName);
       await selectModel(modelName);
       setLocalConfig(prev => ({ ...prev, selectedModel: modelName }));
+      setHasUnsavedChanges(false); // Marca como salvo pois selectModel já salva
+      console.log('Modelo selecionado com sucesso:', modelName);
     } catch (error) {
       console.error('Erro ao selecionar modelo:', error);
     }
+  };
+
+  // FUNÇÕES PARA STABLE DIFFUSION
+
+  /**
+   * Manipula mudanças nos campos de configuração do SD
+   * @param {string} field - Campo alterado
+   * @param {any} value - Novo valor
+   */
+  const handleSdConfigChange = (field, value) => {
+    setLocalSdConfig(prev => ({ ...prev, [field]: value }));
+    setHasSdUnsavedChanges(true);
+    setSdTestResult(null);
+  };
+
+  /**
+   * Testa a conexão com o Stable Diffusion
+   */
+  const handleSdTestConnection = async () => {
+    setIsSdTesting(true);
+    setSdTestResult(null);
+    
+    try {
+      // Atualiza temporariamente a config para teste
+      await updateSdConfig(localSdConfig);
+      const result = await testSdConnection();
+      setSdTestResult(result);
+    } catch (error) {
+      setSdTestResult({
+        success: false,
+        message: error.message,
+        testedUrl: localSdConfig.baseUrl
+      });
+    } finally {
+      setIsSdTesting(false);
+    }
+  };
+
+  /**
+   * Salva as configurações do SD
+   */
+  const handleSaveSdConfig = async () => {
+    try {
+      await updateSdConfig(localSdConfig);
+      setHasSdUnsavedChanges(false);
+      setSdTestResult(null);
+      console.log('Configurações do Stable Diffusion salvas.');
+    } catch (error) {
+      console.error('Erro ao salvar configuração SD:', error);
+    }
+  };
+
+  /**
+   * Seleciona um modelo SD
+   * @param {string} modelName - Nome do modelo
+   */
+  const handleSelectSdModel = async (modelName) => {
+    try {
+      await selectSdModel(modelName);
+      setLocalSdConfig(prev => ({ ...prev, model: modelName }));
+    } catch (error) {
+      console.error('Erro ao selecionar modelo SD:', error);
+    }
+  };
+
+  /**
+   * Manipula mudança de resolução
+   * @param {Object} resolution - Objeto com width e height
+   */
+  const handleResolutionChange = (resolution) => {
+    setLocalSdConfig(prev => ({ 
+      ...prev, 
+      width: resolution.width, 
+      height: resolution.height 
+    }));
+    setHasSdUnsavedChanges(true);
   };
 
   /**
@@ -302,6 +447,162 @@ const SettingsDialog = ({ open, onClose }) => {
     );
   };
 
+  /**
+   * Renderiza o status da conexão SD
+   */
+  const renderSdConnectionStatus = () => {
+    return (
+      <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          Status da Conexão
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={8}>
+            <Box display="flex" alignItems="center" gap={2}>
+              {sdServiceStatus?.success ? (
+                <Chip
+                  icon={<CheckIcon />}
+                  label="Conectado"
+                  color="success"
+                  variant="outlined"
+                />
+              ) : sdServiceStatus?.requiresAuth || sdServiceStatus?.error === 'AUTHENTICATION_REQUIRED' || sdServiceStatus?.error === 'TOKEN_EXPIRED' ? (
+                <Chip
+                  icon={<WarningIcon />}
+                  label="Login Necessário"
+                  color="warning"
+                  variant="outlined"
+                />
+              ) : (
+                <Chip
+                  icon={<ErrorIcon />}
+                  label="Desconectado"
+                  color="error"
+                  variant="outlined"
+                />
+              )}
+              
+              <Typography variant="body2" color="text.secondary">
+                {localSdConfig.baseUrl || 'URL não configurada'}
+              </Typography>
+            </Box>
+            
+            {sdServiceStatus?.message && (
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                {sdServiceStatus.message}
+              </Typography>
+            )}
+
+            {(sdServiceStatus?.requiresAuth || sdServiceStatus?.error === 'AUTHENTICATION_REQUIRED' || sdServiceStatus?.error === 'TOKEN_EXPIRED') && (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                <Typography variant="body2">
+                  💡 Faça login para usar todas as funcionalidades do Stable Diffusion
+                </Typography>
+              </Alert>
+            )}
+          </Grid>
+          
+          {sdServiceStatus?.success && (
+            <Grid item xs={12} md={4}>
+              <Box display="flex" flexDirection="column" alignItems="end">
+                <Typography variant="body2" color="text.secondary">
+                  Modelos: {sdModels.length}
+                </Typography>
+                {sdServiceStatus.version && (
+                  <Typography variant="body2" color="text.secondary">
+                    Versão: {sdServiceStatus.version}
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      </Paper>
+    );
+  };
+
+  /**
+   * Renderiza o resultado do teste de conexão SD
+   */
+  const renderSdTestResult = () => {
+    if (!sdTestResult) return null;
+
+    return (
+      <Alert 
+        severity={sdTestResult.success ? 'success' : 'error'} 
+        sx={{ mt: 2 }}
+      >
+        {sdTestResult.success ? (
+          <>
+            Conexão estabelecida com sucesso!
+            {sdTestResult.models && sdTestResult.models.length > 0 && (
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="body2">
+                  {sdTestResult.models.length} modelos encontrados
+                </Typography>
+              </Box>
+            )}
+          </>
+        ) : (
+          `Falha na conexão: ${sdTestResult.message}`
+        )}
+      </Alert>
+    );
+  };
+
+  /**
+   * Renderiza a lista de modelos SD
+   */
+  const renderSdModelsList = () => {
+    if (!sdModels || sdModels.length === 0) {
+      return (
+        <Box textAlign="center" py={3}>
+          <Typography variant="body2" color="text.secondary">
+            {sdServiceStatus?.success 
+              ? 'Nenhum modelo encontrado' 
+              : 'Conecte ao Stable Diffusion para ver os modelos'
+            }
+          </Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <List dense>
+        {sdModels.map((model) => (
+          <ListItem key={model.model_name} disablePadding>
+            <ListItemButton
+              selected={model.model_name === localSdConfig.model}
+              onClick={() => handleSelectSdModel(model.model_name)}
+            >
+              <ListItemIcon>
+                <ImageIcon 
+                  color={model.model_name === localSdConfig.model ? 'primary' : 'inherit'} 
+                />
+              </ListItemIcon>
+              <ListItemText
+                primary={model.title}
+                secondary={
+                  <Box>
+                    <Typography variant="caption" display="block">
+                      {model.model_name}
+                    </Typography>
+                    {model.model_name === localSdConfig.model && (
+                      <Chip size="small" label="Selecionado" color="primary" sx={{ mt: 0.5 }} />
+                    )}
+                  </Box>
+                }
+              />
+              {model.model_name === localSdConfig.model && (
+                <CheckIcon color="primary" />
+              )}
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    );
+  };
+
   return (
     <Dialog
       open={open}
@@ -317,7 +618,7 @@ const SettingsDialog = ({ open, onClose }) => {
           <Box display="flex" alignItems="center" gap={1}>
             <SettingsIcon />
             <Typography variant="h6">
-              Configurações do OLLAMA
+              Configurações de IA
             </Typography>
           </Box>
           <IconButton onClick={onClose}>
@@ -327,14 +628,33 @@ const SettingsDialog = ({ open, onClose }) => {
       </DialogTitle>
 
       <DialogContent dividers>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+        {/* Tabs para diferentes configurações */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+          <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)}>
+            <Tab 
+              icon={<SmartToyIcon />} 
+              label="Ollama" 
+              iconPosition="start"
+            />
+            <Tab 
+              icon={<ImageIcon />} 
+              label="Stable Diffusion" 
+              iconPosition="start"
+            />
+          </Tabs>
+        </Box>
 
-        {/* Status da Conexão */}
-        {renderConnectionStatus()}
+        {/* Tab Panel - Ollama */}
+        {currentTab === 0 && (
+          <Box>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            {/* Status da Conexão Ollama */}
+            {renderConnectionStatus()}
 
         {/* Configurações Básicas */}
         <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
@@ -424,6 +744,228 @@ const SettingsDialog = ({ open, onClose }) => {
             renderModelsList()
           )}
         </Paper>
+          </Box>
+        )}
+
+        {/* Tab Panel - Stable Diffusion */}
+        {currentTab === 1 && (
+          <Box>
+            {sdError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {sdError}
+              </Alert>
+            )}
+
+            {/* Status da Conexão SD */}
+            {renderSdConnectionStatus()}
+
+            {/* Configurações Básicas SD */}
+            <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Configuração da Conexão
+              </Typography>
+
+              <Box display="flex" alignItems="center" gap={2} mb={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={localSdConfig.enabled}
+                      onChange={(e) => handleSdConfigChange('enabled', e.target.checked)}
+                    />
+                  }
+                  label="Habilitar integração Stable Diffusion"
+                />
+              </Box>
+
+              <TextField
+                fullWidth
+                label="URL do Stable Diffusion"
+                value={localSdConfig.baseUrl}
+                onChange={(e) => handleSdConfigChange('baseUrl', e.target.value)}
+                placeholder="http://192.168.3.70:7861"
+                margin="normal"
+                helperText="URL onde o serviço Stable Diffusion está rodando"
+              />
+
+              <TextField
+                fullWidth
+                label="Token de Autenticação (Opcional)"
+                value={localSdConfig.token || ''}
+                onChange={(e) => handleSdConfigChange('token', e.target.value)}
+                placeholder="Deixe vazio se não necessário"
+                margin="normal"
+                type="password"
+                helperText="Token de autenticação para APIs SD que requerem auth"
+                InputProps={{
+                  autoComplete: 'new-password'
+                }}
+              />
+
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Modelo</InputLabel>
+                    <Select
+                      value={localSdConfig.model}
+                      onChange={(e) => handleSdConfigChange('model', e.target.value)}
+                      label="Modelo"
+                    >
+                      {sdModels.map((model) => (
+                        <MenuItem key={model.model_name} value={model.model_name}>
+                          {model.title}
+                        </MenuItem>
+                      ))}
+                      {sdModels.length === 0 && (
+                        <MenuItem value={localSdConfig.model}>
+                          {localSdConfig.model}
+                        </MenuItem>
+                      )}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Sampler</InputLabel>
+                    <Select
+                      value={localSdConfig.sampler}
+                      onChange={(e) => handleSdConfigChange('sampler', e.target.value)}
+                      label="Sampler"
+                    >
+                      {StableDiffusionConfig.getAvailableSamplers().map((sampler) => (
+                        <MenuItem key={sampler} value={sampler}>
+                          {sampler}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={4}>
+                  <Typography gutterBottom>Steps: {localSdConfig.steps}</Typography>
+                  <Slider
+                    value={localSdConfig.steps}
+                    onChange={(e, value) => handleSdConfigChange('steps', value)}
+                    min={1}
+                    max={150}
+                    step={1}
+                    marks={[
+                      { value: 20, label: '20' },
+                      { value: 50, label: '50' },
+                      { value: 100, label: '100' }
+                    ]}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography gutterBottom>CFG Scale: {localSdConfig.cfgScale}</Typography>
+                  <Slider
+                    value={localSdConfig.cfgScale}
+                    onChange={(e, value) => handleSdConfigChange('cfgScale', value)}
+                    min={1}
+                    max={30}
+                    step={0.5}
+                    marks={[
+                      { value: 7, label: '7' },
+                      { value: 15, label: '15' }
+                    ]}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth>
+                    <InputLabel>Resolução</InputLabel>
+                    <Select
+                      value={`${localSdConfig.width}x${localSdConfig.height}`}
+                      onChange={(e) => {
+                        const [width, height] = e.target.value.split('x').map(Number);
+                        handleResolutionChange({ width, height });
+                      }}
+                      label="Resolução"
+                    >
+                      {StableDiffusionConfig.getCommonResolutions().map((res) => (
+                        <MenuItem key={`${res.width}x${res.height}`} value={`${res.width}x${res.height}`}>
+                          {res.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Largura"
+                    type="number"
+                    value={localSdConfig.width}
+                    onChange={(e) => handleSdConfigChange('width', parseInt(e.target.value))}
+                    inputProps={{ min: 64, max: 2048, step: 64 }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Altura"
+                    type="number"
+                    value={localSdConfig.height}
+                    onChange={(e) => handleSdConfigChange('height', parseInt(e.target.value))}
+                    inputProps={{ min: 64, max: 2048, step: 64 }}
+                  />
+                </Grid>
+              </Grid>
+
+              {/* Teste de Conexão SD */}
+              <Box display="flex" alignItems="center" gap={2} mt={3}>
+                <Button
+                  variant="outlined"
+                  onClick={handleSdTestConnection}
+                  disabled={isSdTesting || !localSdConfig.baseUrl}
+                  startIcon={isSdTesting ? <CircularProgress size={20} /> : <RefreshIcon />}
+                >
+                  {isSdTesting ? 'Testando...' : 'Testar Conexão'}
+                </Button>
+                
+                <Button
+                  variant="contained"
+                  onClick={handleSaveSdConfig}
+                  disabled={!hasSdUnsavedChanges}
+                  color="primary"
+                >
+                  Salvar Configurações
+                </Button>
+              </Box>
+
+              {/* Resultado do Teste SD */}
+              {renderSdTestResult()}
+            </Paper>
+
+            {/* Modelos SD */}
+            <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                <Typography variant="h6">
+                  Modelos Disponíveis
+                </Typography>
+                <Tooltip title="Atualizar lista de modelos">
+                  <IconButton 
+                    onClick={refreshSdModels}
+                    disabled={sdIsLoading || !sdServiceStatus?.success}
+                  >
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+
+              {sdIsLoading ? (
+                <Box display="flex" justifyContent="center" py={3}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                renderSdModelsList()
+              )}
+            </Paper>
+          </Box>
+        )}
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>

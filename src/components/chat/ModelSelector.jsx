@@ -127,8 +127,7 @@ const ModelSelector = ({ onOpenSettings }) => {
     }
 
     return {
-      label: currentModel.getBaseName(),
-      tag: currentModel.getTag(),
+      label: currentModel.getDisplayName(),
       icon: <MemoryIcon fontSize="small" />,
       color: 'success',
       description: `${currentModel.getFamily()} - ${currentModel.getFormattedSize()}`
@@ -147,10 +146,14 @@ const ModelSelector = ({ onOpenSettings }) => {
           size="small"
           sx={{
             minWidth: 120,
+            height: 32,
             justifyContent: 'space-between',
             textTransform: 'none',
             borderColor: theme.palette.divider,
             color: theme.palette.text.primary,
+            borderRadius: 0,
+            fontSize: '0.75rem',
+            px: 1.5,
             '&:hover': {
               borderColor: theme.palette.primary.main,
               backgroundColor: 'rgba(144, 202, 249, 0.08)',
@@ -174,22 +177,12 @@ const ModelSelector = ({ onOpenSettings }) => {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 maxWidth: 80,
+                fontSize: '0.75rem',
+                lineHeight: 1.2,
               }}
             >
               {modelStatus.label}
             </Typography>
-            {modelStatus.tag && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  fontSize: '0.7rem',
-                  lineHeight: 1,
-                }}
-              >
-                {modelStatus.tag}
-              </Typography>
-            )}
           </Box>
         </Button>
       </Tooltip>
@@ -205,6 +198,7 @@ const ModelSelector = ({ onOpenSettings }) => {
             maxHeight: 400,
             backgroundColor: theme.palette.background.paper,
             border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 0,
           }
         }}
         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
@@ -261,7 +255,7 @@ const ModelSelector = ({ onOpenSettings }) => {
                 primary={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="body2">
-                      {model.getBaseName()}
+                      {model.getDisplayName()}
                     </Typography>
                     <Chip
                       label={model.getTag()}

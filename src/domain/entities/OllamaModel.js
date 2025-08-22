@@ -84,6 +84,28 @@ export class OllamaModel {
   }
 
   /**
+   * Obtém o nome real/limpo do modelo (sem prefixos de repositório)
+   * @returns {string}
+   */
+  getDisplayName() {
+    let baseName = this.getBaseName();
+    
+    // Remove prefixos de repositórios (hf.co/, huggingface.co/, etc.)
+    if (baseName.includes('/')) {
+      const parts = baseName.split('/');
+      baseName = parts[parts.length - 1]; // Pega a última parte
+    }
+    
+    // Remove sufixos comuns de formato (GGUF, GGML, etc.)
+    baseName = baseName.replace(/-GGUF$|-GGML$|-gguf$|-ggml$/i, '');
+    
+    // Capitaliza a primeira letra de cada palavra
+    return baseName.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  }
+
+  /**
    * Verifica se o modelo está disponível para uso
    * @returns {boolean}
    */

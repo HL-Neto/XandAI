@@ -47,7 +47,7 @@ export const useOllama = () => {
       };
       reloadData();
     }
-  }, [config?.enabled, config?.baseUrl]);
+  }, [config?.enabled, config?.baseUrl, config?.selectedModel]);
 
   /**
    * Atualiza o status do serviço

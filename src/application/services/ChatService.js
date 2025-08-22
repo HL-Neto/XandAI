@@ -86,22 +86,31 @@ export class ChatService {
       let assistantResponse;
       const ollamaConfig = await this.ollamaService.getConfiguration();
       
+      console.log('Configuração Ollama:', {
+        enabled: ollamaConfig.enabled,
+        selectedModel: ollamaConfig.selectedModel,
+        baseUrl: ollamaConfig.baseUrl
+      });
+      
       if (ollamaConfig.enabled && ollamaConfig.selectedModel) {
         try {
+          console.log('Enviando mensagem para OLLAMA com streaming:', !!onToken);
           // Tenta usar OLLAMA com streaming se callback fornecido
           assistantResponse = await this.ollamaService.sendMessage(
             messageContent, 
             {}, // options
             onToken
           );
+          console.log('Resposta do OLLAMA recebida');
         } catch (ollamaError) {
           console.warn('Erro no OLLAMA, fallback para mock:', ollamaError);
-          // Fallback para mock em caso de erro
-          assistantResponse = await this.chatRepository.sendMessage(messageContent);
+          // Fallback para mock em caso de erro, com streaming se disponível
+          assistantResponse = await this.chatRepository.sendMessage(messageContent, onToken);
         }
       } else {
-        // Usa mock se OLLAMA não estiver configurado
-        assistantResponse = await this.chatRepository.sendMessage(messageContent);
+        console.log('Usando mock (OLLAMA não configurado)');
+        // Usa mock se OLLAMA não estiver configurado, com streaming se disponível
+        assistantResponse = await this.chatRepository.sendMessage(messageContent, onToken);
       }
       
       // Cria a mensagem do assistente

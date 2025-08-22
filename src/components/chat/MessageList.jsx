@@ -24,7 +24,7 @@ import ChatMessage from './ChatMessage';
  * @param {boolean} props.isTyping - Se está digitando
  * @returns {JSX.Element}
  */
-const MessageList = ({ messages = [], isLoading = false, isTyping = false }) => {
+const MessageList = ({ messages = [], isLoading = false, isTyping = false, onImageGenerated }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const messagesEndRef = useRef(null);
@@ -252,6 +252,7 @@ const MessageList = ({ messages = [], isLoading = false, isTyping = false }) => 
                 <ChatMessage 
                   message={message} 
                   showAvatar={shouldShowAvatar(index)}
+                  onImageGenerated={onImageGenerated}
                 />
               </ListItem>
             </React.Fragment>

@@ -18,6 +18,7 @@ export class Message {
     this.timestamp = timestamp;
     this.isTyping = isTyping;
     this.isStreaming = isStreaming;
+    this.attachments = []; // Anexos da mensagem (imagens, arquivos, etc.)
   }
 
   /**
@@ -45,6 +46,25 @@ export class Message {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  /**
+   * Adiciona um anexo à mensagem
+   * @param {Object} attachment - Objeto do anexo
+   */
+  addAttachment(attachment) {
+    if (!this.attachments) {
+      this.attachments = [];
+    }
+    this.attachments.push(attachment);
+  }
+
+  /**
+   * Verifica se a mensagem tem anexos
+   * @returns {boolean}
+   */
+  hasAttachments() {
+    return this.attachments && this.attachments.length > 0;
   }
 
   /**

@@ -30,6 +30,13 @@ export class OllamaApiRepository extends OllamaRepository {
   }
 
   /**
+   * Força recarregamento da configuração
+   */
+  reloadConfig() {
+    this.loadConfig();
+  }
+
+  /**
    * Envia uma mensagem para o OLLAMA
    * @param {string} message - Mensagem para enviar
    * @param {string} model - Modelo a ser usado (opcional, usa o configurado)
@@ -38,6 +45,9 @@ export class OllamaApiRepository extends OllamaRepository {
    * @returns {Promise<string>} - Resposta completa do modelo
    */
   async sendMessage(message, model = null, options = {}, onToken = null) {
+    // Sempre recarrega a configuração para garantir que está atualizada
+    this.reloadConfig();
+
     if (!this.config.enabled) {
       throw new Error('Integração com OLLAMA não está habilitada');
     }
@@ -79,9 +89,19 @@ export class OllamaApiRepository extends OllamaRepository {
         return data.response || '';
       }
     } catch (error) {
+      // Tratamento específico para diferentes tipos de erro
+      if (error.name === 'AbortError') {
+        throw new Error(`Timeout: A resposta do Ollama demorou mais que ${requestBody.stream ? '10 minutos' : this.config.timeout / 1000 + ' segundos'}`);
+      }
+      
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error('Não foi possível conectar ao OLLAMA. Verifique se o serviço está rodando.');
       }
+      
+      if (error.message && error.message.includes('NetworkError')) {
+        throw new Error('Erro de rede ao conectar com o OLLAMA. Verifique sua conexão.');
+      }
+      
       throw error;
     }
   }
@@ -97,40 +117,117 @@ export class OllamaApiRepository extends OllamaRepository {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullResponse = '';
+    let buffer = ''; // Buffer para chunks incompletos
+    let lastCallbackTime = 0;
+    const throttleMs = 16; // ~60fps para suavidade visual
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         
-        if (done) break;
+        if (done) {
+          // Processa qualquer dados restantes no buffer
+          if (buffer.trim()) {
+            try {
+              const data = JSON.parse(buffer);
+              if (data.response) {
+                fullResponse += data.response;
+                if (onToken) {
+                  try {
+                    onToken(data.response, fullResponse, data.done || true); // Final sempre chama
+                  } catch (callbackError) {
+                    console.warn('Erro no callback onToken final:', callbackError);
+                  }
+                }
+              }
+            } catch (parseError) {
+              console.warn('Buffer final inválido:', buffer);
+            }
+          }
+          break;
+        }
 
+        // Decodifica o chunk e adiciona ao buffer
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(line => line.trim());
+        buffer += chunk;
+
+        // Processa linhas completas do buffer
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Mantém a última linha (potencialmente incompleta) no buffer
 
         for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+
           try {
-            const data = JSON.parse(line);
+            const data = JSON.parse(trimmedLine);
             
             if (data.response) {
               fullResponse += data.response;
-              // Chama o callback com o token atual
-              onToken(data.response, fullResponse, data.done || false);
+              // Chama o callback com throttling para performance
+              if (onToken) {
+                const now = Date.now();
+                const shouldCallback = now - lastCallbackTime >= throttleMs || data.done;
+                
+                if (shouldCallback) {
+                  try {
+                    onToken(data.response, fullResponse, data.done || false);
+                    lastCallbackTime = now;
+                  } catch (callbackError) {
+                    console.warn('Erro no callback onToken:', callbackError);
+                  }
+                }
+              }
             }
 
-            // Se chegou ao fim, para o loop
-            if (data.done) {
-              return fullResponse;
-            }
+                  // Se chegou ao fim, para o loop
+      if (data.done) {
+        // Remove prefixos indesejados da resposta final
+        let cleanResponse = fullResponse.trim();
+        const prefixesToRemove = [
+          'Assistente:', 'Assistant:', 'Resposta:', 'Response:',
+          'AI:', 'IA:', 'Bot:', 'Chatbot:', 'Sistema:'
+        ];
+        
+        for (const prefix of prefixesToRemove) {
+          if (cleanResponse.startsWith(prefix)) {
+            cleanResponse = cleanResponse.substring(prefix.length).trim();
+            break;
+          }
+        }
+        
+        // Garante que o callback final seja chamado com a resposta limpa
+        if (onToken && cleanResponse) {
+          try {
+            onToken('', cleanResponse, true); // Envia resposta final limpa
+          } catch (callbackError) {
+            console.warn('Erro no callback final done:', callbackError);
+          }
+        }
+        return cleanResponse;
+      }
           } catch (parseError) {
-            // Ignora linhas que não são JSON válido
-            console.warn('Linha inválida no streaming:', line);
+            // Linha não é JSON válido - pode ser fragmento
+            console.warn('Linha JSON inválida (pode ser fragmento):', trimmedLine.substring(0, 100));
           }
         }
       }
 
       return fullResponse;
+    } catch (error) {
+      // Trata erros específicos de streaming
+      if (error.name === 'AbortError') {
+        throw new Error('Streaming foi interrompido devido a timeout');
+      }
+      
+      console.error('Erro no streaming:', error);
+      throw error;
     } finally {
-      reader.releaseLock();
+      try {
+        reader.releaseLock();
+      } catch (releaseError) {
+        console.warn('Erro ao liberar reader:', releaseError);
+      }
     }
   }
 
@@ -308,6 +405,8 @@ export class OllamaApiRepository extends OllamaRepository {
    * @returns {Promise<OllamaConfig>} - Configuração atual
    */
   async getConfig() {
+    // Sempre recarrega a configuração para garantir que está atualizada
+    this.reloadConfig();
     return this.config;
   }
 
@@ -340,13 +439,34 @@ export class OllamaApiRepository extends OllamaRepository {
   async makeRequest(endpoint, options = {}) {
     const url = `${this.config.baseUrl}${endpoint}`;
     
+    // Timeout maior para requisições de streaming (como /api/generate)
+    const isStreamingEndpoint = endpoint === '/api/generate' || endpoint === '/api/pull';
+    const timeoutMs = isStreamingEndpoint ? 600000 : this.config.timeout; // 10 minutos para streaming
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
+    
     const defaultOptions = {
       headers: {
         'Content-Type': 'application/json',
       },
-      signal: AbortSignal.timeout(this.config.timeout)
+      signal: controller.signal
     };
 
-    return fetch(url, { ...defaultOptions, ...options });
+    try {
+      const response = await fetch(url, { ...defaultOptions, ...options });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error.name === 'AbortError') {
+        throw new Error(`Timeout na requisição para ${endpoint} (${timeoutMs/1000}s)`);
+      }
+      
+      throw error;
+    }
   }
 }

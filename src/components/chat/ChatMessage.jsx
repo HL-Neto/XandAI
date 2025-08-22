@@ -5,6 +5,8 @@ import {
   Typography,
   Avatar,
   Chip,
+  Card,
+  CardMedia,
   useTheme,
   useMediaQuery
 } from '@mui/material';
@@ -13,6 +15,8 @@ import {
   SmartToy as BotIcon,
   MoreHoriz as TypingIcon
 } from '@mui/icons-material';
+import MarkdownRenderer from '../common/MarkdownRenderer';
+import GenerateImageButton from './GenerateImageButton';
 
 /**
  * Componente para exibir uma mensagem individual no chat
@@ -21,14 +25,16 @@ import {
  * @param {boolean} props.showAvatar - Se deve mostrar o avatar
  * @returns {JSX.Element}
  */
-const ChatMessage = ({ message, showAvatar = true }) => {
+const ChatMessage = ({ message, showAvatar = true, onImageGenerated }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   // Verifica se message tem os métodos necessários, senão usa fallback
-  const isUser = message.isFromUser ? message.isFromUser() : message.sender === 'user';
+  const isUser = message.isFromUser ? message.isFromUser() : (message.isUser || message.sender === 'user');
   const isTyping = message.isTyping || false;
   const isStreaming = message.isStreaming || false;
+
+
 
   // Estilo base da mensagem
   const messageBoxStyle = {
@@ -134,10 +140,60 @@ const ChatMessage = ({ message, showAvatar = true }) => {
           ) : (
             <>
               {/* Conteúdo da mensagem */}
-              <Typography variant="body1" sx={{ mb: 0.5 }}>
-                {message.content}
+              <Box sx={{ mb: 0.5 }}>
+                <MarkdownRenderer 
+                  content={message.content} 
+                  isUserMessage={isUser}
+                />
                 {isStreaming && <StreamingCursor />}
-              </Typography>
+              </Box>
+
+              {/* Imagens anexadas do histórico */}
+              {message.attachments && message.attachments.length > 0 && (
+                <Box sx={{ mt: 1.5, mb: 1 }}>
+                  {console.log('Message attachments:', message.attachments)}
+                  {message.attachments
+                    .filter(attachment => attachment.type === 'image')
+                    .map((attachment, index) => (
+                      <Box key={index} sx={{ mb: 1.5, display: 'flex', justifyContent: 'center' }}>
+                        <Card 
+                          sx={{ 
+                            maxWidth: 380, 
+                            borderRadius: 2,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            overflow: 'hidden',
+                            bgcolor: 'background.paper'
+                          }}
+                        >
+                          <CardMedia
+                            component="img"
+                            image={`http://localhost:3001${attachment.url}`}
+                            alt={`Imagem anexada: ${attachment.filename}`}
+                            sx={{ 
+                              width: '100%',
+                              height: 'auto',
+                              maxHeight: 350,
+                              objectFit: 'cover',
+                              display: 'block'
+                            }}
+                          />
+                          {attachment.originalPrompt && (
+                            <Box sx={{ p: 1, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider' }}>
+                              <Typography 
+                                variant="caption" 
+                                color="text.secondary"
+                                sx={{ fontSize: '0.7rem', fontStyle: 'italic', lineHeight: 1.2 }}
+                              >
+                                Prompt: {attachment.originalPrompt}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Card>
+                      </Box>
+                    ))}
+                </Box>
+              )}
+
 
               {/* Informações da mensagem */}
               <Box sx={{ 
@@ -147,24 +203,36 @@ const ChatMessage = ({ message, showAvatar = true }) => {
                 mt: 1,
                 gap: 1
               }}>
-                {/* Nome do remetente */}
-                <Chip
-                  label={isUser ? 'Você' : 'XandAI'}
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    height: 20,
-                    fontSize: '0.75rem',
-                    borderColor: isUser ? 'rgba(255,255,255,0.3)' : theme.palette.divider,
-                    color: isUser ? 'rgba(255,255,255,0.8)' : theme.palette.text.secondary,
-                  }}
-                />
+                {/* Nome do remetente e botão de imagem */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip
+                    label={isUser ? 'Você' : 'XandAI'}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      height: 20,
+                      fontSize: '0.75rem',
+                      borderColor: isUser ? 'rgba(0, 0, 0, 0.3)' : theme.palette.divider,
+                      color: isUser ? 'rgba(0, 0, 0, 0.8)' : theme.palette.text.secondary,
+                    }}
+                  />
+                  
+                  {/* Botão de gerar imagem compacto ao lado do chip */}
+                  {!isUser && !isStreaming && message.content && message.content.length > 10 && (
+                    <GenerateImageButton 
+                      chatResponse={message.content}
+                      messageId={message.id}
+                      compact={true}
+                      onImageGenerated={onImageGenerated}
+                    />
+                  )}
+                </Box>
 
                 {/* Horário */}
                 <Typography 
                   variant="caption" 
                   sx={{ 
-                    color: isUser ? 'rgba(255,255,255,0.7)' : theme.palette.text.secondary,
+                    color: isUser ? 'rgba(0, 0, 0, 0.7)' : theme.palette.text.secondary,
                     fontSize: '0.75rem',
                     flexShrink: 0
                   }}
